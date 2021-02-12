@@ -1,7 +1,7 @@
 class PeopleModal{
   String name ;
   var balance;
-  PeopleModal(this.name,this.balance);
+  PeopleModal({this.name,this.balance});
 }
 
 class TransactionModal{

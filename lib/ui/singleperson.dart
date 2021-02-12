@@ -1,4 +1,6 @@
+import 'package:banking_app/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../modals.dart';
 import '../database.dart';
 import './transactionHis.dart';
@@ -21,6 +23,7 @@ class _SinglePersonState extends State<SinglePerson> {
   @override
   Widget build(BuildContext context) {
     final PeopleModal args = ModalRoute.of(context).settings.arguments;
+    final appState = Provider.of<PeopleProvide>(context);
     return Scaffold(
       appBar: AppBar(),
       body: Column(
@@ -39,7 +42,7 @@ class _SinglePersonState extends State<SinglePerson> {
             children: [
               RaisedButton(
                 onPressed: (){
-                  Navigator.of(context).pushNamed(History.routeName,arguments:PeopleModal(args.name,args.balance) );
+                  Navigator.of(context).pushNamed(History.routeName,arguments:PeopleModal(name:args.name,balance:args.balance) );
                 },
                 child: Text('View Transactions'),
               ),
@@ -53,55 +56,58 @@ class _SinglePersonState extends State<SinglePerson> {
             ],
           ),
           _isSelected
-              ? Container(
-                  child: FutureBuilder(
-                    future: fetchPeopleFromDatabase(args.name),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return new Container(
-                          alignment: AlignmentDirectional.center,
-                          child: new CircularProgressIndicator(),
-                        );
-                      } else {
-                        int len = snapshot.data.length;
-                        if (len == 0) {
-                          return Center(
-                            child: Text('No Data Found'),
-                          );
-                        }
-                        List<PeopleModal> list = snapshot.data.toList();
-                        return Column(
-                          children: [
-                            ...list.map((e) {
-                              return Column(
-                                children: [
-                                  ListTile(
-                                      contentPadding: EdgeInsets.zero,
-                                      onTap: () {
-                                        var dbHelper = DBHelper();
-                                        dbHelper.update(args.name, e.name, 10);
-                                        var dbHelper2 = DBHelperTran();
-                                        dbHelper2.insert(args.name, e.name, 10);
-                                        Navigator.of(context).pop();
-                                      },
-                                      leading: CircleAvatar(
-                                        backgroundImage:
-                                            AssetImage('assets/male.jpg'),
-                                      ),
-                                      title: Text(e.name,
-                                          style: new TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18.0))),
-                                  Divider(),
-                                ],
-                              );
-                            }).toList(),
-                          ],
-                        );
-                      }
-                    },
-                  ),
-                )
+              ? Expanded(
+                              child: SingleChildScrollView(
+                                child: FutureBuilder(
+                                  future: fetchPeopleFromDatabase(args.name),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return new Container(
+                                        alignment: AlignmentDirectional.center,
+                                        child: new CircularProgressIndicator(),
+                                      );
+                                    } else {
+                                      int len = snapshot.data.length;
+                                      if (len == 0) {
+                                        return Center(
+                                          child: Text('No Data Found'),
+                                        );
+                                      }
+                                      List<PeopleModal> list = snapshot.data.toList();
+                                      return Column(
+                                          children: [
+                                            ...list.map((e) {
+                                              return Column(
+                                                children: [
+                                                  ListTile(
+                                                      contentPadding: EdgeInsets.zero,
+                                                      onTap: () async{
+                                                        //var helper = PeopleProvide();
+                                                        appState.update(args.name, e.name, 10);
+                                                        //await helper.update(args.name, e.name, 10);
+                                                        var dbHelper2 = DBHelperTran();
+                                                        dbHelper2.insert(args.name, e.name, 10);
+                                                        Navigator.of(context).pop();
+                                                      },
+                                                      leading: CircleAvatar(
+                                                        backgroundImage:
+                                                            AssetImage('assets/male.jpg'),
+                                                      ),
+                                                      title: Text(e.name,
+                                                          style: new TextStyle(
+                                                              fontWeight: FontWeight.bold,
+                                                              fontSize: 18.0))),
+                                                  Divider(),
+                                                ],
+                                              );
+                                            }).toList(),
+                                          ],
+                                        );
+                                    }
+                                  },
+                                ),
+                ),
+              )
               : Container(
                   height: 0,
                 ),

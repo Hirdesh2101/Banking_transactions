@@ -1,75 +1,57 @@
+import 'package:banking_app/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../modals.dart';
-import '../database.dart';
 import './singleperson.dart';
+//import '../database.dart';
 
-class Customers extends StatelessWidget {
+class Customers extends StatefulWidget {
   static const routeName = '/customers';
+
+  @override
+  _CustomersState createState() => _CustomersState();
+}
+
+class _CustomersState extends State<Customers> {
+  Future<void>initialize()async{
+    await Provider.of<PeopleProvide>(context,listen: false).fetchAndSetPlaces();
+  }
+    @override
+  void initState() {
+    initialize();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
-    Future<List<PeopleModal>> fetchPeopleFromDatabase() async {
-      var dbHelper = DBHelper();
-      Future<List<PeopleModal>> people = dbHelper.getPeople();
-      return people;
-    }
-    return ChangeNotifierProvider(
-      create: (context) => DBHelper(),
-          child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text('Customers'),
         ),
         body: new Container(
-          padding: new EdgeInsets.all(5.0),
-          child: new FutureBuilder<List<PeopleModal>>(
-            future: fetchPeopleFromDatabase(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return new Container(
-                  alignment: AlignmentDirectional.center,
-                  child: new CircularProgressIndicator(),
-                );
-              } else {
-                int len = snapshot.data.length;
-                if (len == 0) {
-                  return Center(
-                    child: Text('No Data Found'),
-                  );
-                }
-                List<PeopleModal> list = snapshot.data.toList();
-                return Column(
-                  children: [
-                    ...list.map((e) {
-                      return Column(
-                        children: [
-                          ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              onTap: () {
-                                Navigator.of(context)
-                                    .pushNamed(SinglePerson.routeName,arguments: PeopleModal(e.name,e.balance));
-                              },
-                              leading: CircleAvatar(
-                                backgroundImage: AssetImage('assets/male.jpg'),
-                              ),
-                              title: Text(e.name,
-                                  style: new TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18.0)),
-                              subtitle: Text(e.balance.toString(),
-                                  style: new TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18.0))),
-                          Divider(),
-                        ],
-                      );
-                    }).toList(),
-                  ],
-                );
-              }
-            },
-          ),
-        ),
-      ),
-    );
+            padding: new EdgeInsets.all(5.0),
+            child: new Consumer<PeopleProvide>(
+              builder: (ctx, people, wid) => people.items.length > 0
+                  ? ListView.builder(
+                      itemCount: people.items.length,
+                      itemBuilder: (ctx, i) => ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: AssetImage('assets/male.jpg'),
+                        ),
+                        title: Text(people.items[i].name),
+                        subtitle: Text(people.items[i].balance.toString()),
+                        onTap: () {
+                          Navigator.of(context).pushNamed(
+                              SinglePerson.routeName,
+                              arguments: PeopleModal(
+                                  name: people.items[i].name,
+                                  balance: people.items[i].balance));
+                        },
+                      ),
+                    )
+                  : Center(child: CircularProgressIndicator()),
+              child: Center(
+                child: Text('No Data'),
+              ),
+            )));
   }
 }

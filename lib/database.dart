@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'dart:io' as io;
 import 'package:banking_app/modals.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
-class DBHelper with ChangeNotifier {
+class DBHelper {
   static Database _db;
 
   Future<Database> get db async {
@@ -24,29 +23,38 @@ class DBHelper with ChangeNotifier {
 
   void _onCreate(Database db, int version) async {
     await db.execute(
-        "CREATE TABLE People(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL,balance REAL)");  
+        "CREATE TABLE People(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL,balance INT)");  
     await insert(db);
-    notifyListeners();
   }
   Future insert(Database db)async{
     var dbClient = db;
     await dbClient.rawInsert( 'INSERT INTO People(name,balance) VALUES(?, ?)',
-      ['Hirdesh',3.1416]);
+      ['Hirdesh',3]);
     await dbClient.rawInsert( 'INSERT INTO People(name,balance) VALUES(?, ?)',
-      ['Yogesh',10.1416]);
+      ['Yogesh',10]);
     await dbClient.rawInsert( 'INSERT INTO People(name,balance) VALUES(?, ?)',
-      ['Atul',1.1416]);
+      ['Priyanshu',1]);
     await dbClient.rawInsert( 'INSERT INTO People(name,balance) VALUES(?, ?)',
-      ['Chirag',3000.1416]);
+      ['Manish',100]);
     await dbClient.rawInsert( 'INSERT INTO People(name,balance) VALUES(?, ?)',
-      ['Dev',8.1416]);  
+      ['Raj',13]);
+    await dbClient.rawInsert( 'INSERT INTO People(name,balance) VALUES(?, ?)',
+      ['Piyush',0]);
+    await dbClient.rawInsert( 'INSERT INTO People(name,balance) VALUES(?, ?)',
+      ['Adarsh',1000]);    
+    await dbClient.rawInsert( 'INSERT INTO People(name,balance) VALUES(?, ?)',
+      ['Atul',1]);
+    await dbClient.rawInsert( 'INSERT INTO People(name,balance) VALUES(?, ?)',
+      ['Chirag',3000]);
+    await dbClient.rawInsert( 'INSERT INTO People(name,balance) VALUES(?, ?)',
+      ['Dev',8]);  
   }
   Future<List<PeopleModal>> getPeople() async {
     var dbClient = await db;
     List<Map> list = await dbClient.rawQuery('SELECT * FROM People');
     List<PeopleModal> people = [];
     for (int i = 0; i < list.length; i++) {
-      people.add(new PeopleModal(list[i]["name"],list[i]["balance"]));
+      people.add(new PeopleModal(name: list[i]["name"],balance :list[i]["balance"]));
     }
     return people;
   }
@@ -55,11 +63,11 @@ class DBHelper with ChangeNotifier {
     List<Map> list = await dbClient.rawQuery('SELECT * FROM People WHERE name!=?',['$name']);
     List<PeopleModal> people = [];
     for (int i = 0; i < list.length; i++) {
-      people.add(new PeopleModal(list[i]["name"],list[i]["balance"]));
+      people.add(new PeopleModal(name :list[i]["name"],balance:list[i]["balance"]));
     }
     return people;
   }
-  update(String name ,String whom , double amount) async {
+  Future<void> update(String name ,String whom , int amount) async {
     var dbClient = await db;
     List<Map> temp1 = await dbClient.rawQuery('SELECT * FROM People WHERE name=?',['$name']);
     List<Map> temp2 = await dbClient.rawQuery('SELECT * FROM People WHERE name=?',['$whom']);
@@ -80,6 +88,5 @@ class DBHelper with ChangeNotifier {
        ''',
        [temp2[0]["name"],(temp2[0]["balance"]+amount),temp2[0]["name"]]
       );  
-      notifyListeners();
   }
 }

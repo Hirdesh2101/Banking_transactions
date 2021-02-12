@@ -12,7 +12,8 @@ class History extends StatelessWidget {
       Future<List<TransactionModal>> people = dbHelper.getTran(args.name);
       return people;
     }
-    return  Scaffold(
+
+    return Scaffold(
       appBar: AppBar(
         title: Text('Transactions'),
       ),
@@ -28,10 +29,10 @@ class History extends StatelessWidget {
               );
             } else {
               int len;
-              if(snapshot.hasData){
-                 len = snapshot.data.length;
-              }else{
-                len =0;
+              if (snapshot.hasData) {
+                len = snapshot.data.length;
+              } else {
+                len = 0;
               }
               if (len == 0) {
                 print('aya');
@@ -40,23 +41,24 @@ class History extends StatelessWidget {
                 );
               }
               List<TransactionModal> list = snapshot.data.toList();
-              return Column(
-                children: [
-                  ...list.map((e) {
-                    return Column(
-                      children: [
-                        ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            onTap: () {
-                            },
-                            leading: Icon(Icons.history),
-                            title: Text('${e.name} --> ${e.whom}'),
-                            subtitle: Text(e.amount.toString())),
-                        Divider(),
-                      ],
-                    );
-                  }).toList(),
-                ],
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ...list.map((e) {
+                      return Column(
+                        children: [
+                          ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              onTap: () {},
+                              leading: Icon(Icons.history),
+                              title: Text('${e.name} --> ${e.whom}'),
+                              subtitle: Text(e.amount.toString())),
+                          Divider(),
+                        ],
+                      );
+                    }).toList(),
+                  ],
+                ),
               );
             }
           },
